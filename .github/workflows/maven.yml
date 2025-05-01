@@ -2,11 +2,18 @@ name: CI for FrameworkQaTesting
 
 on:
   push:
-    branches: [ "master" ]
+    branches: [ '**' ]
+
+permissions:
+  contents: write
+  pages: write
+  id-token: write
 
 jobs:
-  build:
-
+  deploy:
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
     runs-on: ubuntu-latest
 
     steps:
@@ -17,5 +24,26 @@ jobs:
         java-version: '18'
         distribution: 'temurin'
         cache: maven
+    - name: Install Allure
+      run: |
+        curl -o allure.zip -L https://github.com/allure-framework/allure2/releases/download/2.25.0/allure-2.25.0.zip  
+        sudo apt-get install -y unzip  
+        unzip allure.zip -d /opt/allure  
+        sudo ln -s /opt/allure/allure-2.25.0/bin/allure /usr/bin/allure
+
     - name: Run tests
       run: mvn clean test
+
+    - name: Generate Allure Report
+      run: |
+        mkdir -p allure-report  
+        allure generate --clean allure-results -o allure-report  
+
+    - name: Upload Allure Report as artifact
+      uses: actions/upload-pages-artifact@v3
+      with:
+        path: './allure-report'
+
+    - name: Deploy to GitHub Pages
+      id: deployment
+      uses: actions/deploy-pages@v4
