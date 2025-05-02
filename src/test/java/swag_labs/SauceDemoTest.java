@@ -46,6 +46,7 @@ public class SauceDemoTest {
         Configuration.pageLoadStrategy = "eager";
         Configuration.browser = "chrome";
         Configuration.browserSize = "1024x768";
+        Configuration.headless = true;
     }
 
     @BeforeEach
